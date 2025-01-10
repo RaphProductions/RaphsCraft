@@ -18,10 +18,22 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="assets\raphscraft\fonts\notosans-regular.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="assets\raphscraft\shaders\DefaultFragment.f4">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="assets\raphscraft\shaders\DefaultVertex.v4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\raphscraft\shaders\GuiFragment.f4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\raphscraft\shaders\GuiVertex.v4">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="assets\raphscraft\textures\blocks\grass_side.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="assets\raphscraft\textures\unknown.png">

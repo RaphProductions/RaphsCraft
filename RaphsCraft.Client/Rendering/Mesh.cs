@@ -1,4 +1,4 @@
-﻿using OpenTK.Graphics.OpenGL4;
+﻿using Silk.NET.OpenGL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,76 +7,47 @@ using System.Threading.Tasks;
 
 namespace RaphsCraft.Client.Rendering;
 
-public class Mesh : IDisposable
+/// <summary>
+/// A mesh.
+/// </summary>
+public class Mesh
 {
-    private int _vao;
-    private int _vbo;
-    private int _ebo;
-    private float[] vertices;
-    private uint[] indices;
-    private Texture? t;
+    private uint _vao;
+    private uint _vbo;
+    private uint _ebo;
+    internal float[] vertices;
+    internal uint[] indices;
 
-    public Mesh(float[] vertices)
-    {
-        this.vertices = vertices;
-
-        _vbo = GL.GenBuffer();
-        _vao = GL.GenVertexArray();
-        GL.BindVertexArray(_vao);
-
-        GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-        GL.EnableVertexAttribArray(0);
-    }
-
-    public Mesh(float[] vertices, uint[] indices, Texture? t = null)
+    public unsafe Mesh(float[] vertices, uint[] indices)
     {
         this.vertices = vertices;
         this.indices = indices;
 
-        _vbo = GL.GenBuffer();
-        _vao = GL.GenVertexArray();
-        GL.BindVertexArray(_vao);
+        var _gl = Game.Instance.GetGL();
 
-        GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-        GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+        _vao = _gl.GenVertexArray();
+        _gl.BindVertexArray(_vao);
 
-        if (t != null)
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
-        else
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+        _vbo = _gl.GenBuffer();
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _vbo);
 
-        if (t != null)
-        {
-            int texCoordLocation = Shader.DEFAULT_SHADER.GetAttribLocation("aTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
-        }
-        GL.EnableVertexAttribArray(0);
+        fixed (float* buf = vertices)
+            _gl.BufferData(BufferTargetARB.ArrayBuffer, (nuint)(vertices.Length * sizeof(float)), buf, BufferUsageARB.StaticDraw);
 
-        _ebo = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
-        GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+        _ebo = _gl.GenBuffer();
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, _ebo);
+
+        fixed (uint* buf = indices)
+            _gl.BufferData(BufferTargetARB.ElementArrayBuffer, (nuint)(indices.Length * sizeof(uint)), buf, BufferUsageARB.StaticDraw);
+
+        const uint positionLoc = 0;
+        _gl.EnableVertexAttribArray(positionLoc);
+        _gl.VertexAttribPointer(positionLoc, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), (void*)0);
+
+        _gl.BindVertexArray(0);
+        _gl.BindBuffer(BufferTargetARB.ArrayBuffer, 0);
+        _gl.BindBuffer(BufferTargetARB.ElementArrayBuffer, 0);
     }
 
-
-    public void Render()
-    {
-        t?.Use(TextureUnit.Texture0);
-
-        GL.BindVertexArray(_vao);
-
-        if (_ebo == 0)
-            GL.DrawArrays(PrimitiveType.Triangles, 0, vertices.Length / 3);
-        else
-            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
-    }
-
-    public void Dispose()
-    {
-        GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-        GL.DeleteBuffer(_vbo);
-    }
+    public uint GetVertexArrayObject() => _vao;
 }

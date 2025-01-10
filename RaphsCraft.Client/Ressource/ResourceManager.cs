@@ -10,7 +10,8 @@ public enum ResourceType
 {
     Shaders,
     Textures,
-    Lang
+    Lang,
+    Fonts
 }
 
 public class ResourceManager
